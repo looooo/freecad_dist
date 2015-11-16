@@ -1,11 +1,11 @@
 __all__= ["fc_install"]
-__version__ = "0.1"
+__version__ = "0.1.1"
 
 import os
 import subprocess
 import tempfile
 
-from distutils.command.install import install as dist_install
+from setuptools.command.install import install as dist_install
 
 class fc_install(dist_install):
     def initialize_options(self):
