@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 import freecad_dist
 
 setup(name='freecad_dist',

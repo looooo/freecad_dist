@@ -4,7 +4,7 @@ install freecad modules with distutils
 ## example setup.py file
 ```python
 from freecad_dist import fc_install                 # custom freecad install
-from distutils.core import setup
+from setuptools.core import setup
 
 setup(cmdclass={'install': fc_install},
       install_requires=["numpy"],
