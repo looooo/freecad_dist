@@ -1,5 +1,5 @@
 __all__= ["fc_install"]
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 import os
 import sys
@@ -33,8 +33,9 @@ path_list = []\n\
 package_list = []\n\
 with open(packages_txt, 'r') as package_file:\n\
     for package in package_file:\n\
+        package = package.replace('\n', '')\n\
         try:\n\
-            path = imp.find_module(package)[1]\n\
+            path = os.path.realpath(imp.find_module(package)[1])\n\
             package_list.append(package)\n\
             path_list.append(path)\n\
         except ImportError:\n\
@@ -44,7 +45,7 @@ for path in path_list:\n\
         exec(init_file.read())\n\
 with open(packages_txt, 'w') as package_file:\n\
     for package in package_list:\n\
-        package_file.write(package)\n\
+        package_file.write(package + '\n')\n\
 "
 
 init_gui_start_file = "\
@@ -53,8 +54,10 @@ path_list = []\n\
 package_list = []\n\
 with open(packages_txt, 'r') as package_file:\n\
     for package in package_file:\n\
+        package = package.replace('\n', '')\n\
         try:\n\
             path = imp.find_module(package)[1]\n\
+            print(path)\n\
             package_list.append(package)\n\
             path_list.append(path)\n\
         except ImportError:\n\
@@ -64,7 +67,7 @@ for path in path_list:\n\
         exec(init_file.read())\n\
 with open(packages_txt, 'w') as package_file:\n\
     for package in package_list:\n\
-        package_file.write(package)\n\
+        package_file.write(package + '\n')\n\
 "
 
 def check():
@@ -94,7 +97,7 @@ class fc_install(dist_install):
 
 
     def run(self):
-        fcad_py_ex_path = get_freecad_path() + "/start_python_extern"
+        fcad_py_ex_path = get_freecad_path() + "/start_python_extern" + str(os.getuid())
         init_path = fcad_py_ex_path + "/Init.py"
         initgui_path = fcad_py_ex_path + "/InitGui.py"
         package_path = fcad_py_ex_path + "/packages.txt"
@@ -102,6 +105,11 @@ class fc_install(dist_install):
         self.if_not_exist_create_file(init_path, text=init_start_file)
         self.if_not_exist_create_file(initgui_path, text=init_gui_start_file)
         self.if_not_exist_create_file(package_path)
+        if os.getuid() == 0:
+            uid = int(os.environ.get('SUDO_UID'))
+            gid = int(os.environ.get('SUDO_GID'))
+            os.chown(package_path, uid, gid)
+
         dist_install.run(self)
         package_name = self.distribution.packages[0]
         append_name = True
