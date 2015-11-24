@@ -27,49 +27,6 @@ def get_freecad_path():
             sys.exit()
 
 
-init_start_file = "\
-import imp\n\
-path_list = []\n\
-package_list = []\n\
-with open(packages_txt, 'r') as package_file:\n\
-    for package in package_file:\n\
-        package = package.replace('\n', '')\n\
-        try:\n\
-            path = os.path.realpath(imp.find_module(package)[1])\n\
-            package_list.append(package)\n\
-            path_list.append(path)\n\
-        except ImportError:\n\
-            print('package ' + package + ' not found')\n\
-for path in path_list:\n\
-    with open(path + '/Init.py') as init_file:\n\
-        exec(init_file.read())\n\
-with open(packages_txt, 'w') as package_file:\n\
-    for package in package_list:\n\
-        package_file.write(package + '\n')\n\
-"
-
-init_gui_start_file = "\
-import imp\n\
-path_list = []\n\
-package_list = []\n\
-with open(packages_txt, 'r') as package_file:\n\
-    for package in package_file:\n\
-        package = package.replace('\n', '')\n\
-        try:\n\
-            path = imp.find_module(package)[1]\n\
-            print(path)\n\
-            package_list.append(package)\n\
-            path_list.append(path)\n\
-        except ImportError:\n\
-            print('package ' + package + ' not found')\n\
-for path in path_list:\n\
-    with open(path + '/InitGui.py') as init_file:\n\
-        exec(init_file.read())\n\
-with open(packages_txt, 'w') as package_file:\n\
-    for package in package_list:\n\
-        package_file.write(package + '\n')\n\
-"
-
 def check():
     pass
 
@@ -85,25 +42,28 @@ class fc_install(dist_install):
         where the exec comes from."""
 
     def if_not_exist_create_file(self, path, text=None):
-        print(path)
+        print(text)
         if not os.path.exists(path):
             with open(path, "w") as fp:
                 if text:
-                    fp.write("packages_txt = '" + os.path.dirname(path) + "/packages.txt'\n")
-                    fp.write(text)
+                    with open(text) as in_file:
+                        txt = in_file.read()
+                        fp.write(txt)
+
     def if_not_exist_create_dir(self, path):
         if not os.path.exists(path):
             os.makedirs(path)
 
 
     def run(self):
+        DIR = os.path.dirname(__file__) + "/"
         fcad_py_ex_path = get_freecad_path() + "/start_python_extern" + str(os.getuid())
         init_path = fcad_py_ex_path + "/Init.py"
         initgui_path = fcad_py_ex_path + "/InitGui.py"
         package_path = fcad_py_ex_path + "/packages.txt"
         self.if_not_exist_create_dir(fcad_py_ex_path)
-        self.if_not_exist_create_file(init_path, text=init_start_file)
-        self.if_not_exist_create_file(initgui_path, text=init_gui_start_file)
+        self.if_not_exist_create_file(init_path, text=DIR + "Init.py")
+        self.if_not_exist_create_file(initgui_path, text=DIR + "InitGui.py")
         self.if_not_exist_create_file(package_path)
         if os.getuid() == 0:
             uid = int(os.environ.get('SUDO_UID'))
