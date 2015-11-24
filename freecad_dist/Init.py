@@ -1,4 +1,3 @@
-packages_txt = '/home/lo/.FreeCAD/Mod/start_python_extern1000/packages.txt'
 import imp
 path_list = []
 package_list = []

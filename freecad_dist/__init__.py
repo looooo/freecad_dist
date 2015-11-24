@@ -1,5 +1,5 @@
 __all__= ["fc_install"]
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 
 import os
 import sys
@@ -41,12 +41,14 @@ class fc_install(dist_install):
         files. (eg. class workbench can be used without an import) because it is defined in the file
         where the exec comes from."""
 
-    def if_not_exist_create_file(self, path, text=None):
+    def if_not_exist_create_file(self, path, text=None, force=False, first_line=None):
         print(text)
-        if not os.path.exists(path):
+        if not os.path.exists(path) or force:
             with open(path, "w") as fp:
                 if text:
                     with open(text) as in_file:
+                        if first_line:
+                            fp.write(first_line)
                         txt = in_file.read()
                         fp.write(txt)
 
@@ -61,9 +63,12 @@ class fc_install(dist_install):
         init_path = fcad_py_ex_path + "/Init.py"
         initgui_path = fcad_py_ex_path + "/InitGui.py"
         package_path = fcad_py_ex_path + "/packages.txt"
+        apply_line = "packages_txt = '" + package_path + "'\n"
         self.if_not_exist_create_dir(fcad_py_ex_path)
-        self.if_not_exist_create_file(init_path, text=DIR + "Init.py")
-        self.if_not_exist_create_file(initgui_path, text=DIR + "InitGui.py")
+        self.if_not_exist_create_file(init_path, text=DIR + "Init.py",
+                                      force=True, first_line=apply_line)
+        self.if_not_exist_create_file(initgui_path, text=DIR + "InitGui.py",
+                                      force=True, first_line=apply_line)
         self.if_not_exist_create_file(package_path)
         if os.getuid() == 0:
             uid = int(os.environ.get('SUDO_UID'))
@@ -75,10 +80,9 @@ class fc_install(dist_install):
         append_name = True
         with open(package_path, "r") as package_file:
             for line in package_file:
-                if package_name == line:
+                if package_name in line:
                     append_name = False
-                    break;
+                    break
         if append_name:
             with open(package_path, "a") as package_file:
-                package_file.write(package_name)
-
+                package_file.write(package_name + "\n")
